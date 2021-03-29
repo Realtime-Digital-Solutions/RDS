@@ -1,0 +1,51 @@
+.test
+{
+  border: 1px solid lightblue;
+  background-color: white;
+  text-align: center;
+}
+h1
+{
+  font-family: cursive;
+  color: #0077b6;
+}
+.test img
+{
+  width:100px;height:80px;
+  float:left;
+  padding-left: 20px;
+  padding-top: 5px;
+}
+.test a
+{
+  color: #0077b6;
+  float:right;
+  padding: 30px;
+  font-style: oblique;
+  font-size: 20px;
+}
+a:hover
+{
+  transition: 1s;
+  transform: scale(1.1);
+  transition: all ease 1000ms;
+}
+.Shaneprofile
+{
+  background-color: #f9f9f9;
+  padding-left: 400px;
+  padding-right: 400px;
+  padding-top: 60px;
+  padding-bottom:60px;
+  font-family: cursive;
+}
+.Shaneprofile h2
+{
+  font-style: italic;
+  font-size:15px;
+  padding-bottom: 1px;
+}
+.Shaneprofile h3
+{
+  color: #0077b6;
+}
