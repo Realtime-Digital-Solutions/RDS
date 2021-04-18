@@ -765,9 +765,11 @@ a {
   margin-left: 0.5rem;
   margin-top: 0.2rem;
 }
-.cid-sul7nP8o4G .nav-link {
-  position: relative;
+
+.cid-sul7nP8o4G nav.navbar {
+  position: fixed;
 }
+
 .cid-sul7nP8o4G .container {
   display: flex;
   margin: auto;
