@@ -1520,6 +1520,7 @@ a {
 }
 .cid-sul7nP8o4G .navbar-dropdown {
   padding: 0 1rem;
+  position: fixed;
 }
 .cid-sul7nP8o4G a.nav-link {
   display: flex;
