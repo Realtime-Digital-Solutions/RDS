@@ -1956,7 +1956,7 @@ a {
   transition: all 0.3s;
   border-bottom: 1px solid transparent;
   position: absolute;
-  background: rgba(49, 54, 64, 0.5);
+  background: #313640;
 }
 .cid-sut1PjnEXt .navbar.opened {
   transition: all 0.3s;
