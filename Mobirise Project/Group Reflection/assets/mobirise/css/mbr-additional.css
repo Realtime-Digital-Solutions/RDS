@@ -802,7 +802,7 @@ a {
   width: 100%;
 }
 .cid-sul7nP8o4G .navbar-dropdown {
-  position: relative !important;
+  position: fixed !important;
 }
 .cid-sul7nP8o4G .dropdown-item:before {
   font-family: Moririse2 !important;
@@ -1277,7 +1277,7 @@ a {
   width: 100%;
 }
 .cid-sul7nP8o4G .navbar-dropdown {
-  position: relative !important;
+  position: fixed !important;
 }
 .cid-sul7nP8o4G .dropdown-item:before {
   font-family: Moririse2 !important;
