@@ -1,7 +1,8 @@
+import sys
+import time
 
-
-from PyQt5 import QtCore, QtGui, QtWidgets
-
+from PyQt5 import QtCore, QtWidgets, QtGui
+from PyQt5.QtGui import QColor
 
 class Ui_MainWindow(object):
 
@@ -97,9 +98,6 @@ class Ui_MainWindow(object):
         font.setPointSize(28)
         self.Emerg.setFont(font)
         self.Emerg.setObjectName("Emerg")
-        self.pushButton = QtWidgets.QPushButton(self.centralwidget, )
-        self.pushButton.setGeometry(QtCore.QRect(570, 250, 111, 28))
-        self.pushButton.setObjectName("pushButton")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 26))
@@ -114,25 +112,44 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "PulseBeat"))
         self.label.setText(_translate("MainWindow", "Set Heart Rate Min limits"))
         self.label_2.setText(_translate("MainWindow", "Set Heart Rate Max limits"))
         self.label_3.setText(_translate("MainWindow", "Heart Rate BPM"))
-        self.HRValue.setText(_translate("MainWindow", "0"))
+        self.HRValue.setText(_translate("MainWindow", "75"))
         self.MAC.setText(_translate("MainWindow", "Device MAC Address"))
         self.MACaddress.setText(_translate("MainWindow", "A3:DC:45:4F:92:8E"))
         self.label_4.setText(_translate("MainWindow", "RSSI Level dBm"))
-        self.HRValue_2.setText(_translate("MainWindow", "0"))
+        self.HRValue_2.setText(_translate("MainWindow", "-65"))
         self.label_5.setText(_translate("MainWindow", "Patient Name"))
         self.PatientName.setText(_translate("MainWindow", "Peter Smith"))
         self.timeOlabel.setText(_translate("MainWindow", "Time of Data Arrival"))
         self.TOAD.setText(_translate("MainWindow", "12:00:00:00:00"))
         self.Emerg.setText(_translate("MainWindow", "Patient Stable"))
-        self.pushButton.setText(_translate("MainWindow", "Start Emulation"))
 
+        # create thread
+        self.thread = QtCore.QThread()
+        # create object which will be moved to another thread
+        self.browserHandler = BrowserHandler()
+        # move object to another thread
+        self.browserHandler.moveToThread(self.thread)
+        # connect started signal to run method of object in another thread
+        self.thread.started.connect(self.browserHandler.run)
+        # start thread
+        self.thread.start()
+
+# Object, which will be moved to thread
+class BrowserHandler(QtCore.QObject):
+    running = False
+    newTextAndColor = QtCore.pyqtSignal(str, object)
+
+    # method which will execute algorithm in another thread
+    def run(self):
+        while True:
+            print('Threading')
+            QtCore.QThread.msleep(500)
 
 if __name__ == "__main__":
-    import sys
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()
