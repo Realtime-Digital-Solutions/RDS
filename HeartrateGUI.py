@@ -1,9 +1,44 @@
-import sys
-import time
 
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtGui import QColor
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
+import select, socket, sys, queue, time
 
+# setup socket server and bind to WiFi interface
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.setblocking(0)
+server.bind(('192.168.43.234', 5000))
+server.listen(10)
+inputs = [server]
+outputs = []
+message_queues = {}
+
+# global variables
+HR_Value = "0"
+RSSI_Value = "-90"
+MAC_Address = "A3:DC:45:4F:92:8E"
+Finger = False
+
+# Worker thread
+class WorkThread(QThread):
+    global HR_Value
+    # pyqtSignal is the signal class
+    timeout = pyqtSignal()  # Send a signal every second
+    end = pyqtSignal()  # Send a signal after counting is complete
+
+    def run(self):
+        global HR_Value
+        while True:
+            # Sleep for 1 second
+            self.sleep(1)
+            self.timeout.emit()  # Send timeout signal to update GUI method
+            HR_Value = int(HR_Value)
+            HR_Value += 1
+            HR_Value = str(HR_Value)
+
+# GUI class
 class Ui_MainWindow(object):
 
     def setupUi(self, MainWindow):
@@ -116,43 +151,40 @@ class Ui_MainWindow(object):
         self.label.setText(_translate("MainWindow", "Set Heart Rate Min limits"))
         self.label_2.setText(_translate("MainWindow", "Set Heart Rate Max limits"))
         self.label_3.setText(_translate("MainWindow", "Heart Rate BPM"))
-        self.HRValue.setText(_translate("MainWindow", "75"))
+        self.HRValue.setText(_translate("MainWindow", "0"))
         self.MAC.setText(_translate("MainWindow", "Device MAC Address"))
-        self.MACaddress.setText(_translate("MainWindow", "A3:DC:45:4F:92:8E"))
+        self.MACaddress.setText(_translate("MainWindow", ""))
         self.label_4.setText(_translate("MainWindow", "RSSI Level dBm"))
-        self.HRValue_2.setText(_translate("MainWindow", "-65"))
+        self.HRValue_2.setText(_translate("MainWindow", "0"))
         self.label_5.setText(_translate("MainWindow", "Patient Name"))
         self.PatientName.setText(_translate("MainWindow", "Peter Smith"))
         self.timeOlabel.setText(_translate("MainWindow", "Time of Data Arrival"))
         self.TOAD.setText(_translate("MainWindow", "12:00:00:00:00"))
         self.Emerg.setText(_translate("MainWindow", "Patient Stable"))
 
-        # create thread
-        self.thread = QtCore.QThread()
-        # create object which will be moved to another thread
-        self.browserHandler = BrowserHandler()
-        # move object to another thread
-        self.browserHandler.moveToThread(self.thread)
-        # connect started signal to run method of object in another thread
-        self.thread.started.connect(self.browserHandler.run)
-        # start thread
-        self.thread.start()
+        self.workThread = WorkThread()
+        # instantiate work thread and point to update.GUI method
+        self.workThread.timeout.connect(self.update_GUI)
 
-# Object, which will be moved to thread
-class BrowserHandler(QtCore.QObject):
-    running = False
-    newTextAndColor = QtCore.pyqtSignal(str, object)
+        #Start the worker thread
+        self.workThread.start()
 
-    # method which will execute algorithm in another thread
-    def run(self):
-        while True:
-            print('Threading')
-            QtCore.QThread.msleep(500)
+    # update the GUI widgets
+    def update_GUI(self):
+        global HR_Value, RSSI_Value, MAC_Address, Finger
+        self.HRValue.setText(HR_Value)
+        self.HRValue_2.setText(RSSI_Value)
+        self.MACaddress.setText(MAC_Address)
+        self.Emerg.setText("No Finger")
+
+
 
 if __name__ == "__main__":
+
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())
+
