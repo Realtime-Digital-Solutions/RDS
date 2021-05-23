@@ -10,13 +10,17 @@ import select, socket, sys, queue, time, subprocess
 IP_Address = socket.gethostbyname(socket.gethostname())
 
 # setup socket server and bind to WiFi interface
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.setblocking(0)
-server.bind((IP_Address, 5000))
-server.listen(10)
-inputs = [server]
-outputs = []
-message_queues = {}
+try:
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.setblocking(0)
+    server.bind((IP_Address, 5000))
+    server.listen(10)
+    inputs = [server]
+    outputs = []
+    message_queues = {}
+except:
+    print("cannot connect to client/server")
+
 
 # global variables
 HR_Value = "0"
@@ -24,6 +28,7 @@ RSSI_Value = "0"
 MAC_Address = ""
 Finger = "0"
 emulateMode = False
+HR_Value_count = 95
 
 # Worker thread
 class WorkThread(QThread):
@@ -82,6 +87,7 @@ class Ui_MainWindow(object):
         self.minDail = QtWidgets.QDial(self.centralwidget)
         self.minDail.setGeometry(QtCore.QRect(110, 290, 50, 64))
         self.minDail.setObjectName("minDail")
+        self.minDail.valueChanged.connect(self.minDialSet)
         self.label = QtWidgets.QLabel(self.centralwidget)
         self.label.setGeometry(QtCore.QRect(60, 270, 171, 16))
         font = QtGui.QFont()
@@ -92,6 +98,7 @@ class Ui_MainWindow(object):
         self.MaxDial = QtWidgets.QDial(self.centralwidget)
         self.MaxDial.setGeometry(QtCore.QRect(300, 290, 50, 64))
         self.MaxDial.setObjectName("MaxDial")
+        self.MaxDial.valueChanged.connect(self.maxDialSet)
         self.label_2 = QtWidgets.QLabel(self.centralwidget)
         self.label_2.setGeometry(QtCore.QRect(250, 270, 181, 16))
         font = QtGui.QFont()
@@ -184,7 +191,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "PulseBeat"))
         self.label.setText(_translate("MainWindow", "Set Heart Rate Min limits"))
         self.label_2.setText(_translate("MainWindow", "Set Heart Rate Max limits"))
         self.label_3.setText(_translate("MainWindow", "Heart Rate BPM"))
@@ -222,16 +229,57 @@ class Ui_MainWindow(object):
                 self.Emerg.setText("NO FINGER!")
                 self.Emerg.setStyleSheet("color: rgb(255, 0, 0);")
 
+        # emulation mode
+        else:
+            self.Emerg.setText("EMULATE")
+            self.Emerg.setStyleSheet("color: rgb(0, 255, 0);")
+            self.HRValue.setText("95")
+            # put HR value count up down here
+
+            self.HRValue_2.setText("-95")
+            try:
+                maxLimit = self.maxSet.text()
+                minLimit = self.minSet.text()
+                maxLimit = int(maxLimit)
+                minLimit = int(minLimit)
+
+                if maxLimit > 95:
+                    self.Emerg.setText("EMERGENCY!")
+                    self.Emerg.setStyleSheet("color: rgb(255, 0, 0);")
+                elif minLimit < 94:
+                    self.Emerg.setText("EMERGENCY!")
+                    self.Emerg.setStyleSheet("color: rgb(255, 0, 0);")
+                else:
+                    self.Emerg.setText("STABLE")
+                    self.Emerg.setStyleSheet("color: rgb(0, 0, 255);")
+            except:
+                pass
+
     # emulate mode for testing
     def emulate(self):
         global emulateMode
-        emulateMode = True
-        self.Emerg.setText("EMULATE")
-        self.Emerg.setStyleSheet("color: rgb(0, 255, 0);")
-        self.HRValue.setText("95")
-        self.HRValue_2.setText("-100")
-        
+        self.maxSet.setText("94")
+        self.minSet.setText("96")
+        if emulateMode:
+            emulateMode = False
+        else:
+            emulateMode = True
 
+    # dial set method
+    def minDialSet(self):
+        min = self.minSet.text()
+        min = int(min)
+        min -= 1
+        min = str(min)
+        self.minSet.setText(min)
+
+    # dial set method
+    def maxDialSet(self):
+        max = self.maxSet.text()
+        max = int(max)
+        max += 1
+        max = str(max)
+        self.maxSet.setText(max)
 
 if __name__ == "__main__":
 
