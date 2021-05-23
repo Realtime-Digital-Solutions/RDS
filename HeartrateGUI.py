@@ -22,7 +22,8 @@ message_queues = {}
 HR_Value = "0"
 RSSI_Value = "0"
 MAC_Address = ""
-Finger = False
+Finger = "0"
+emulateMode = False
 
 # Worker thread
 class WorkThread(QThread):
@@ -53,18 +54,14 @@ class WorkThread(QThread):
                                 data = data.decode('utf-8') # bytes to string data stream
 
                                 # extract data from input stream and split up into CSV
-                                data_extract = (data[data.find("(") + 1:data.find(")")])
+                                data_extract = (data[data.find("(") + 1:data.find(")")]) # find data between parenthesis
                                 data_split = data_extract.split(",")
                                 HR_Value = data_split[0]
                                 MAC_Address = data_split[1]
                                 RSSI_Value = data_split[2]
                                 Finger = data_split[3]
 
-
-                                # Sleep for 1 second
-                                #self.sleep(1)
                                 self.timeout.emit()  # Send timeout signal to update GUI method
-
 
                         else:
                             if s in outputs:
@@ -72,7 +69,6 @@ class WorkThread(QThread):
                             inputs.remove(s)
                             s.close()
                             del message_queues[s]
-
 
 
 # GUI class
@@ -173,6 +169,7 @@ class Ui_MainWindow(object):
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton.setGeometry(QtCore.QRect(460, 310, 111, 28))
         self.pushButton.setObjectName("pushButton")
+        self.pushButton.clicked.connect(self.emulate)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 26))
@@ -193,14 +190,12 @@ class Ui_MainWindow(object):
         self.label_3.setText(_translate("MainWindow", "Heart Rate BPM"))
         self.HRValue.setText(_translate("MainWindow", "0"))
         self.MAC.setText(_translate("MainWindow", "Device MAC Address"))
-        self.MACaddress.setText(_translate("MainWindow", "A3:DC:45:4F:92:8E"))
         self.label_4.setText(_translate("MainWindow", "RSSI Level dBm"))
         self.HRValue_2.setText(_translate("MainWindow", "0"))
         self.label_5.setText(_translate("MainWindow", "Patient Name"))
         self.PatientName.setText(_translate("MainWindow", "Peter Smith"))
         self.timeOlabel.setText(_translate("MainWindow", "Time of Data Arrival"))
         self.TOAD.setText(_translate("MainWindow", "12:00:00:00:00"))
-        self.Emerg.setText(_translate("MainWindow", "Patient Stable"))
         self.pushButton.setText(_translate("MainWindow", "Start Emulation"))
 
         self.workThread = WorkThread()
@@ -212,12 +207,30 @@ class Ui_MainWindow(object):
 
     # update the GUI widgets
     def update_GUI(self):
-        global HR_Value, RSSI_Value, MAC_Address, Finger
-        self.HRValue.setText(HR_Value)
-        self.HRValue_2.setText(RSSI_Value)
-        self.MACaddress.setText(MAC_Address)
-        self.Emerg.setText("No Finger")
+        global HR_Value, RSSI_Value, MAC_Address, Finger, emulateMode
 
+        # test for emulate mode
+        if not emulateMode:
+            self.HRValue.setText(HR_Value)
+            self.HRValue_2.setText(RSSI_Value)
+            self.MACaddress.setText(MAC_Address)
+            # check for finger on sensor
+            if Finger == "1":
+                self.Emerg.setText("FINGER")
+                self.Emerg.setStyleSheet("color: rgb(0, 0, 255);")
+            else:
+                self.Emerg.setText("NO FINGER!")
+                self.Emerg.setStyleSheet("color: rgb(255, 0, 0);")
+
+    # emulate mode for testing
+    def emulate(self):
+        global emulateMode
+        emulateMode = True
+        self.Emerg.setText("EMULATE")
+        self.Emerg.setStyleSheet("color: rgb(0, 255, 0);")
+        self.HRValue.setText("95")
+        self.HRValue_2.setText("-100")
+        
 
 
 if __name__ == "__main__":
