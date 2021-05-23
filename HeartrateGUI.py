@@ -267,19 +267,25 @@ class Ui_MainWindow(object):
 
     # dial set method
     def minDialSet(self):
-        min = self.minSet.text()
-        min = int(min)
-        min -= 1
-        min = str(min)
-        self.minSet.setText(min)
+        try:
+            min = self.minSet.text()
+            min = int(min)
+            min -= 1
+            min = str(min)
+            self.minSet.setText(min)
+        except:
+            pass
 
     # dial set method
     def maxDialSet(self):
-        max = self.maxSet.text()
-        max = int(max)
-        max += 1
-        max = str(max)
-        self.maxSet.setText(max)
+        try:
+            max = self.maxSet.text()
+            max = int(max)
+            max += 1
+            max = str(max)
+            self.maxSet.setText(max)
+        except:
+            pass
 
 if __name__ == "__main__":
 
