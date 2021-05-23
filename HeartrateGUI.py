@@ -4,7 +4,7 @@ from PyQt5.QtGui import QColor
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
-import select, socket, sys, queue, time, subprocess
+import select, socket, sys, queue, time
 
 # get local WLAN IP address
 IP_Address = socket.gethostbyname(socket.gethostname())
@@ -14,13 +14,12 @@ try:
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.setblocking(0)
     server.bind((IP_Address, 5000))
-    server.listen(10)
+    server.listen(10) # up to 10 clients served
     inputs = [server]
     outputs = []
     message_queues = {}
 except:
-    print("cannot connect to client/server")
-
+    print("cannot connect to host IP")
 
 # global variables
 HR_Value = "0"
@@ -41,7 +40,7 @@ class WorkThread(QThread):
         while True:
             # get data from ESP8266 and display to GUI
             while inputs:
-
+                # get data from bound WiFi socket using select to clear receive buffer
                 readable, writable, exceptional = select.select(
                     inputs, outputs, inputs)
                 for s in readable:
@@ -53,12 +52,12 @@ class WorkThread(QThread):
                     else:
                         data = s.recv(1024)
                         if data:
-                            message_queues[s].put(data)
+                            message_queues[s].put(data) # queue data
                             if s not in outputs:
                                 outputs.append(s)
                                 data = data.decode('utf-8') # bytes to string data stream
 
-                                # extract data from input stream and split up into CSV
+                                # extract data from input stream and split up into from CSV
                                 data_extract = (data[data.find("(") + 1:data.find(")")]) # find data between parenthesis
                                 data_split = data_extract.split(",")
                                 HR_Value = data_split[0]
@@ -76,7 +75,7 @@ class WorkThread(QThread):
                             del message_queues[s]
 
 
-# GUI class
+# PulseBeat GUI class
 class Ui_MainWindow(object):
 
     def setupUi(self, MainWindow):
@@ -233,16 +232,17 @@ class Ui_MainWindow(object):
         else:
             self.Emerg.setText("EMULATE")
             self.Emerg.setStyleSheet("color: rgb(0, 255, 0);")
+            # fixed values for GUI
             self.HRValue.setText("95")
-            # put HR value count up down here
-
             self.HRValue_2.setText("-95")
             try:
+                # get values from text edit boxes
                 maxLimit = self.maxSet.text()
                 minLimit = self.minSet.text()
                 maxLimit = int(maxLimit)
                 minLimit = int(minLimit)
-
+                
+                # compare values for emergency display
                 if maxLimit > 95:
                     self.Emerg.setText("EMERGENCY!")
                     self.Emerg.setStyleSheet("color: rgb(255, 0, 0);")
